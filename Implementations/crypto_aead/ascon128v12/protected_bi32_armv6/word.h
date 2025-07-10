@@ -394,64 +394,39 @@ forceinline word_t M4XORBIC(word_t o, word_t X, word_t Y, word_t Z, int last){
     Out_X2= X2 ⊕     Y2Z0 ⊕     Y2Z3 ⊕ Y3Z0 ⊕ Y3Z3
     Out_X3= X1 ⊕     Y2Z1 ⊕     Y2Z2 ⊕ Y3Z1 ⊕ Y3Z2     
   */
-  if(last==0){
-    #pragma GCC unroll 2
-    for (int i=0;i<2;i++){
-      EOR_ROR        (o.s[0].w[i], o.s[0].w[i], X.s[0].w[i],  ROT(0));
-      EOR_ROR_BIC_ROR(o.s[0].w[i], Z.s[0].w[i], Y.s[0].w[i],  0,  0, tmp); 
-      EOR_ROR_BIC_ROR(o.s[0].w[i], Z.s[3].w[i], Y.s[0].w[i], -3,  3, tmp); 
-      EOR_ROR_AND_ROR(o.s[0].w[i], Y.s[1].w[i], Z.s[0].w[i], -1,  1, tmp);
-      EOR_ROR_AND_ROR(o.s[0].w[i], Y.s[1].w[i], Z.s[3].w[i],  2,  1, tmp);
-
-      EOR_ROR        (o.s[1].w[i], o.s[1].w[i], X.s[3].w[i],  ROT(2));
-      EOR_ROR_BIC_ROR(o.s[1].w[i], Z.s[1].w[i], Y.s[0].w[i], -1,  0, tmp); 
-      EOR_ROR_BIC_ROR(o.s[1].w[i], Z.s[2].w[i], Y.s[0].w[i], -2,  1, tmp); 
-      EOR_ROR_AND_ROR(o.s[1].w[i], Y.s[1].w[i], Z.s[1].w[i],  0,  0, tmp);
-      EOR_ROR_AND_ROR(o.s[1].w[i], Y.s[1].w[i], Z.s[2].w[i],  1,  0, tmp);
-
-      EOR_ROR        (o.s[2].w[i], o.s[2].w[i], X.s[1].w[i],  ROT(-1));
-      EOR_ROR_AND_ROR(o.s[2].w[i], Z.s[0].w[i], Y.s[2].w[i],  2, -2, tmp); 
-      EOR_ROR_AND_ROR(o.s[2].w[i], Z.s[3].w[i], Y.s[2].w[i], -1,  1, tmp); 
-      EOR_ROR_AND_ROR(o.s[2].w[i], Y.s[3].w[i], Z.s[0].w[i], -3,  1, tmp);
-      EOR_ROR_AND_ROR(o.s[2].w[i], Y.s[3].w[i], Z.s[3].w[i],  0,  1, tmp);
-  
-      EOR_ROR        (o.s[3].w[i], o.s[3].w[i], X.s[2].w[i],  ROT(-1));
-      EOR_ROR_AND_ROR(o.s[3].w[i], Z.s[1].w[i], Y.s[2].w[i],  1, -2, tmp); 
-      EOR_ROR_AND_ROR(o.s[3].w[i], Z.s[2].w[i], Y.s[2].w[i],  0, -1, tmp); 
-      EOR_ROR_AND_ROR(o.s[3].w[i], Y.s[3].w[i], Z.s[1].w[i], -2,  0, tmp);
-      EOR_ROR_AND_ROR(o.s[3].w[i], Y.s[3].w[i], Z.s[2].w[i], -1,  0, tmp);
-      }
-    return o;
-    }
+  const int idx_X[4] = { last ? 3 : 0, last ? 0 : 3, last ? 2 : 1, last ? 1 : 2 };
 
   #pragma GCC unroll 2
-  for (int i=0;i<2;i++){
-  EOR_ROR        (o.s[0].w[i], o.s[0].w[i], X.s[3].w[i],  ROT(3));
-  EOR_ROR_BIC_ROR(o.s[0].w[i], Z.s[0].w[i], Y.s[0].w[i],  0,  0, tmp); 
-  EOR_ROR_BIC_ROR(o.s[0].w[i], Z.s[3].w[i], Y.s[0].w[i], -3,  3, tmp); 
-  EOR_ROR_AND_ROR(o.s[0].w[i], Y.s[1].w[i], Z.s[0].w[i], -1,  1, tmp);
-  EOR_ROR_AND_ROR(o.s[0].w[i], Y.s[1].w[i], Z.s[3].w[i],  2,  1, tmp);
+  for (int i = 0; i < 2; i++) {
+  // Out share 0
+  EOR_ROR        (o.s[0].w[i], o.s[0].w[i], X.s[idx_X[0]].w[i], ROT(idx_X[0]));
+  EOR_ROR_BIC_ROR(o.s[0].w[i], Z.s[0].w[i], Y.s[0].w[i],         0, 0, tmp); 
+  EOR_ROR_BIC_ROR(o.s[0].w[i], Z.s[3].w[i], Y.s[0].w[i],        -3, 3, tmp); 
+  EOR_ROR_AND_ROR(o.s[0].w[i], Y.s[1].w[i], Z.s[0].w[i],        -1, 1, tmp);
+  EOR_ROR_AND_ROR(o.s[0].w[i], Y.s[1].w[i], Z.s[3].w[i],         2, 1, tmp);
 
-  EOR_ROR        (o.s[1].w[i], o.s[1].w[i], X.s[0].w[i],  ROT(-1));
-  EOR_ROR_BIC_ROR(o.s[1].w[i], Z.s[1].w[i], Y.s[0].w[i], -1,  0, tmp); 
-  EOR_ROR_BIC_ROR(o.s[1].w[i], Z.s[2].w[i], Y.s[0].w[i], -2,  1, tmp); 
-  EOR_ROR_AND_ROR(o.s[1].w[i], Y.s[1].w[i], Z.s[1].w[i],  0,  0, tmp);
-  EOR_ROR_AND_ROR(o.s[1].w[i], Y.s[1].w[i], Z.s[2].w[i],  1,  0, tmp);
+  // Out share 1
+  EOR_ROR        (o.s[1].w[i], o.s[1].w[i], X.s[idx_X[1]].w[i], ROT(idx_X[1]-1));
+  EOR_ROR_BIC_ROR(o.s[1].w[i], Z.s[1].w[i], Y.s[0].w[i],         -1, 0, tmp); 
+  EOR_ROR_BIC_ROR(o.s[1].w[i], Z.s[2].w[i], Y.s[0].w[i],         -2, 1, tmp); 
+  EOR_ROR_AND_ROR(o.s[1].w[i], Y.s[1].w[i], Z.s[1].w[i],          0, 0, tmp);
+  EOR_ROR_AND_ROR(o.s[1].w[i], Y.s[1].w[i], Z.s[2].w[i],          1, 0, tmp);
 
-  EOR_ROR        (o.s[2].w[i], o.s[2].w[i], X.s[2].w[i],  ROT(0));
-  EOR_ROR_AND_ROR(o.s[2].w[i], Z.s[0].w[i], Y.s[2].w[i],  2, -2, tmp); 
-  EOR_ROR_AND_ROR(o.s[2].w[i], Z.s[3].w[i], Y.s[2].w[i], -1,  1, tmp); 
-  EOR_ROR_AND_ROR(o.s[2].w[i], Y.s[3].w[i], Z.s[0].w[i], -3,  1, tmp);
-  EOR_ROR_AND_ROR(o.s[2].w[i], Y.s[3].w[i], Z.s[3].w[i],  0,  1, tmp);
-  
-  EOR_ROR        (o.s[3].w[i], o.s[3].w[i], X.s[1].w[i],  ROT(-2));
-  EOR_ROR_AND_ROR(o.s[3].w[i], Z.s[1].w[i], Y.s[2].w[i],  1, -2, tmp); 
-  EOR_ROR_AND_ROR(o.s[3].w[i], Z.s[2].w[i], Y.s[2].w[i],  0, -1, tmp); 
-  EOR_ROR_AND_ROR(o.s[3].w[i], Y.s[3].w[i], Z.s[1].w[i], -2,  0, tmp);
-  EOR_ROR_AND_ROR(o.s[3].w[i], Y.s[3].w[i], Z.s[2].w[i], -1,  0, tmp);
-  }
-  return o;
+  // Out share 2
+  EOR_ROR        (o.s[2].w[i], o.s[2].w[i], X.s[idx_X[2]].w[i], ROT(idx_X[2]-2));
+  EOR_ROR_AND_ROR(o.s[2].w[i], Z.s[0].w[i], Y.s[2].w[i],         2, -2, tmp); 
+  EOR_ROR_AND_ROR(o.s[2].w[i], Z.s[3].w[i], Y.s[2].w[i],        -1,  1, tmp); 
+  EOR_ROR_AND_ROR(o.s[2].w[i], Y.s[3].w[i], Z.s[0].w[i],        -3,  1, tmp);
+  EOR_ROR_AND_ROR(o.s[2].w[i], Y.s[3].w[i], Z.s[3].w[i],         0,  1, tmp);
 
+  // Out share 3
+  EOR_ROR        (o.s[3].w[i], o.s[3].w[i], X.s[idx_X[3]].w[i], ROT(idx_X[3]-3));
+  EOR_ROR_AND_ROR(o.s[3].w[i], Z.s[1].w[i], Y.s[2].w[i],         1, -2, tmp); 
+  EOR_ROR_AND_ROR(o.s[3].w[i], Z.s[2].w[i], Y.s[2].w[i],         0, -1, tmp); 
+  EOR_ROR_AND_ROR(o.s[3].w[i], Y.s[3].w[i], Z.s[1].w[i],        -2,  0, tmp);
+  EOR_ROR_AND_ROR(o.s[3].w[i], Y.s[3].w[i], Z.s[2].w[i],        -1,  0, tmp);
+}
+return o;
 }
 
 

@@ -35,13 +35,13 @@ forceinline state_t SBOX(state_t s, int ns) {
   if (ns >= 3) s = AFFINE1(s, 2);
   if (ns >= 4) s = AFFINE1(s, 3);
  
-  #pragma GCC unroll 20
+  #pragma GCC unroll 40
   for (int j = 0; j < 5; j++)
   for (int jj = 0; jj < ns; jj++){
     s_temp.x[j].s[jj].w[0] = s.x[j].s[jj].w[0];
     s.x[j].s[jj].w[0] = 0;   
   }   
-  #pragma GCC unroll 20
+  #pragma GCC unroll 40
   for (int j = 0; j < 5; j++)
   for (int jj = 0; jj < ns; jj++){   
     s_temp.x[j].s[jj].w[1] = s.x[j].s[jj].w[1];
