@@ -35,26 +35,34 @@ forceinline state_t SBOX(state_t s, int ns) {
   if (ns >= 3) s = AFFINE1(s, 2);
   if (ns >= 4) s = AFFINE1(s, 3);
  
-  #pragma GCC unroll 15
+  #pragma GCC unroll 20
   for (int j = 0; j < 5; j++)
   for (int jj = 0; jj < ns; jj++){
     s_temp.x[j].s[jj].w[0] = s.x[j].s[jj].w[0];
     s.x[j].s[jj].w[0] = 0;   
   }   
-  #pragma GCC unroll 15
+  #pragma GCC unroll 20
   for (int j = 0; j < 5; j++)
   for (int jj = 0; jj < ns; jj++){   
     s_temp.x[j].s[jj].w[1] = s.x[j].s[jj].w[1];
     s.x[j].s[jj].w[1] = 0;
   }   
   
-
+ if(ns<4){ 
  s.x[0] = MXORBIC1(s.x[0], s_temp.x[0], s_temp.x[1], s_temp.x[2], ns);   
  s.x[2] = MXORBIC3(s.x[2], s_temp.x[2], s_temp.x[3], s_temp.x[4], ns); 
  s.x[1] = MXORBIC2(s.x[1], s_temp.x[1], s_temp.x[2], s_temp.x[3], ns);    
  s.x[3] = MXORBIC4(s.x[3], s_temp.x[3], s_temp.x[4], s_temp.x[0], ns);  
  s.x[4] = MXORBIC5(s.x[4], s_temp.x[4], s_temp.x[0], s_temp.x[1], ns);  
-    
+ }
+ else{
+ s.x[0] = M4XORBIC(s.x[0], s_temp.x[0], s_temp.x[1], s_temp.x[2], 0);   
+ s.x[1] = M4XORBIC(s.x[1], s_temp.x[1], s_temp.x[2], s_temp.x[3], 0); 
+ s.x[2] = M4XORBIC(s.x[2], s_temp.x[2], s_temp.x[3], s_temp.x[4], 0);    
+ s.x[3] = M4XORBIC(s.x[3], s_temp.x[3], s_temp.x[4], s_temp.x[0], 0);  
+ s.x[4] = M4XORBIC(s.x[4], s_temp.x[4], s_temp.x[0], s_temp.x[1], 1);  
+ }
+
   /* affine layer 2 */
   if (ns >= 1) s = AFFINE2(s, 0);
   s.x[2].s[0].w[0] = ~s.x[2].s[0].w[0];
@@ -119,3 +127,4 @@ forceinline void PROUNDS(state_t* s, int nr, int ns) {
 }
 
 #endif /* ROUND_H_ */
+

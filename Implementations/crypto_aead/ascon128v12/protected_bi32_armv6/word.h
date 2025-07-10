@@ -378,6 +378,83 @@ if (ns == 3) {
 return o;
 }
 
+forceinline word_t M4XORBIC(word_t o, word_t X, word_t Y, word_t Z, int last){
+  uint32_t tmp;
+  
+  /*Number of shares is 4 
+    For X,Y,Z = {(a,b,c) (b,c,d) (c,d,e) (d,e,a)}
+    Out_X0= X0 ⊕ (1⊕Y0)Z0 ⊕ (1⊕Y0)Z3 ⊕ Y1Z0 ⊕ Y1Z3 
+    Out_X1= X3 ⊕ (1⊕Y0)Z1 ⊕ (1⊕Y0)Z2 ⊕ Y1Z1 ⊕ Y1Z2
+    Out_X2= X1 ⊕     Y2Z0 ⊕     Y2Z3 ⊕ Y3Z0 ⊕ Y3Z3
+    Out_X3= X2 ⊕     Y2Z1 ⊕     Y2Z2 ⊕ Y3Z1 ⊕ Y3Z2 
+    
+    But, for X,Y,Z =(e,a,b)
+    Out_X0= X3 ⊕ (1⊕Y0)Z0 ⊕ (1⊕Y0)Z3 ⊕ Y1Z0 ⊕ Y1Z3 
+    Out_X1= X0 ⊕ (1⊕Y0)Z1 ⊕ (1⊕Y0)Z2 ⊕ Y1Z1 ⊕ Y1Z2
+    Out_X2= X2 ⊕     Y2Z0 ⊕     Y2Z3 ⊕ Y3Z0 ⊕ Y3Z3
+    Out_X3= X1 ⊕     Y2Z1 ⊕     Y2Z2 ⊕ Y3Z1 ⊕ Y3Z2     
+  */
+  if(last==0){
+    #pragma GCC unroll 2
+    for (int i=0;i<2;i++){
+      EOR_ROR        (o.s[0].w[i], o.s[0].w[i], X.s[0].w[i],  ROT(0));
+      EOR_ROR_BIC_ROR(o.s[0].w[i], Z.s[0].w[i], Y.s[0].w[i],  0,  0, tmp); 
+      EOR_ROR_BIC_ROR(o.s[0].w[i], Z.s[3].w[i], Y.s[0].w[i], -3,  3, tmp); 
+      EOR_ROR_AND_ROR(o.s[0].w[i], Y.s[1].w[i], Z.s[0].w[i], -1,  1, tmp);
+      EOR_ROR_AND_ROR(o.s[0].w[i], Y.s[1].w[i], Z.s[3].w[i],  2,  1, tmp);
+
+      EOR_ROR        (o.s[1].w[i], o.s[1].w[i], X.s[3].w[i],  ROT(2));
+      EOR_ROR_BIC_ROR(o.s[1].w[i], Z.s[1].w[i], Y.s[0].w[i], -1,  0, tmp); 
+      EOR_ROR_BIC_ROR(o.s[1].w[i], Z.s[2].w[i], Y.s[0].w[i], -2,  1, tmp); 
+      EOR_ROR_AND_ROR(o.s[1].w[i], Y.s[1].w[i], Z.s[1].w[i],  0,  0, tmp);
+      EOR_ROR_AND_ROR(o.s[1].w[i], Y.s[1].w[i], Z.s[2].w[i],  1,  0, tmp);
+
+      EOR_ROR        (o.s[2].w[i], o.s[2].w[i], X.s[1].w[i],  ROT(-1));
+      EOR_ROR_AND_ROR(o.s[2].w[i], Z.s[0].w[i], Y.s[2].w[i],  2, -2, tmp); 
+      EOR_ROR_AND_ROR(o.s[2].w[i], Z.s[3].w[i], Y.s[2].w[i], -1,  1, tmp); 
+      EOR_ROR_AND_ROR(o.s[2].w[i], Y.s[3].w[i], Z.s[0].w[i], -3,  1, tmp);
+      EOR_ROR_AND_ROR(o.s[2].w[i], Y.s[3].w[i], Z.s[3].w[i],  0,  1, tmp);
+  
+      EOR_ROR        (o.s[3].w[i], o.s[3].w[i], X.s[2].w[i],  ROT(-1));
+      EOR_ROR_AND_ROR(o.s[3].w[i], Z.s[1].w[i], Y.s[2].w[i],  1, -2, tmp); 
+      EOR_ROR_AND_ROR(o.s[3].w[i], Z.s[2].w[i], Y.s[2].w[i],  0, -1, tmp); 
+      EOR_ROR_AND_ROR(o.s[3].w[i], Y.s[3].w[i], Z.s[1].w[i], -2,  0, tmp);
+      EOR_ROR_AND_ROR(o.s[3].w[i], Y.s[3].w[i], Z.s[2].w[i], -1,  0, tmp);
+      }
+    return o;
+    }
+
+  #pragma GCC unroll 2
+  for (int i=0;i<2;i++){
+  EOR_ROR        (o.s[0].w[i], o.s[0].w[i], X.s[3].w[i],  ROT(3));
+  EOR_ROR_BIC_ROR(o.s[0].w[i], Z.s[0].w[i], Y.s[0].w[i],  0,  0, tmp); 
+  EOR_ROR_BIC_ROR(o.s[0].w[i], Z.s[3].w[i], Y.s[0].w[i], -3,  3, tmp); 
+  EOR_ROR_AND_ROR(o.s[0].w[i], Y.s[1].w[i], Z.s[0].w[i], -1,  1, tmp);
+  EOR_ROR_AND_ROR(o.s[0].w[i], Y.s[1].w[i], Z.s[3].w[i],  2,  1, tmp);
+
+  EOR_ROR        (o.s[1].w[i], o.s[1].w[i], X.s[0].w[i],  ROT(-1));
+  EOR_ROR_BIC_ROR(o.s[1].w[i], Z.s[1].w[i], Y.s[0].w[i], -1,  0, tmp); 
+  EOR_ROR_BIC_ROR(o.s[1].w[i], Z.s[2].w[i], Y.s[0].w[i], -2,  1, tmp); 
+  EOR_ROR_AND_ROR(o.s[1].w[i], Y.s[1].w[i], Z.s[1].w[i],  0,  0, tmp);
+  EOR_ROR_AND_ROR(o.s[1].w[i], Y.s[1].w[i], Z.s[2].w[i],  1,  0, tmp);
+
+  EOR_ROR        (o.s[2].w[i], o.s[2].w[i], X.s[2].w[i],  ROT(0));
+  EOR_ROR_AND_ROR(o.s[2].w[i], Z.s[0].w[i], Y.s[2].w[i],  2, -2, tmp); 
+  EOR_ROR_AND_ROR(o.s[2].w[i], Z.s[3].w[i], Y.s[2].w[i], -1,  1, tmp); 
+  EOR_ROR_AND_ROR(o.s[2].w[i], Y.s[3].w[i], Z.s[0].w[i], -3,  1, tmp);
+  EOR_ROR_AND_ROR(o.s[2].w[i], Y.s[3].w[i], Z.s[3].w[i],  0,  1, tmp);
+  
+  EOR_ROR        (o.s[3].w[i], o.s[3].w[i], X.s[1].w[i],  ROT(-2));
+  EOR_ROR_AND_ROR(o.s[3].w[i], Z.s[1].w[i], Y.s[2].w[i],  1, -2, tmp); 
+  EOR_ROR_AND_ROR(o.s[3].w[i], Z.s[2].w[i], Y.s[2].w[i],  0, -1, tmp); 
+  EOR_ROR_AND_ROR(o.s[3].w[i], Y.s[3].w[i], Z.s[1].w[i], -2,  0, tmp);
+  EOR_ROR_AND_ROR(o.s[3].w[i], Y.s[3].w[i], Z.s[2].w[i], -1,  0, tmp);
+  }
+  return o;
+
+}
+
+
 forceinline word_t MXORBIC(word_t c, word_t a, word_t b, int i, int ns) {
   uint32_t tmp;
   if (ns == 1) {
@@ -561,3 +638,4 @@ forceinline void MSTORE(uint32_t* data, word_t w, int ns) {
 }
 
 #endif /* WORD_H_ */
+

@@ -44,15 +44,29 @@
       : [ ae_ ] "r"(ae), [ be_ ] "r"(be), [ i1_ ] "i"(ROT(imm)) \
       :)
 
+#define EOR_ROR_AND_ROR(ce, ae, be, imm1, imm2, tmp)                       \
+  __asm__ volatile(                                             \
+      "and %[tmp_], %[ae_], %[be_], ror %[i1_]\n\t"             \
+      "eor %[ce_], %[ce_], %[tmp_], ror %[i2_]\n\t"                         \
+      : [ ce_ ] "+r"(ce), [ tmp_ ] "=r"(tmp)                    \
+      : [ ae_ ] "r"(ae), [ be_ ] "r"(be), [ i1_ ] "i"(ROT(imm1)), [ i2_ ] "i"(ROT(imm2)) \
+      :)
+
+#define EOR_ROR_BIC_ROR(ce, ae, be, imm1, imm2, tmp)                       \
+  __asm__ volatile(                                             \
+      "bic %[tmp_], %[ae_], %[be_], ror %[i1_]\n\t"             \
+      "eor %[ce_], %[ce_], %[tmp_], ror %[i2_]\n\t"                         \
+      : [ ce_ ] "+r"(ce), [ tmp_ ] "=r"(tmp)                    \
+      : [ ae_ ] "r"(ae), [ be_ ] "r"(be), [ i1_ ] "i"(ROT(imm1)), [ i2_ ] "i"(ROT(imm2)) \
+      :)
+
 #define EOR_ORR_ROR(ce, ae, be, imm, tmp)                       \
   __asm__ volatile(                                             \
       "orr %[tmp_], %[ae_], %[be_], ror %[i1_]\n\t"             \
       "eor %[ce_], %[tmp_], %[ce_]\n\t"                         \
       : [ ce_ ] "+r"(ce), [ tmp_ ] "=r"(tmp)                    \
       : [ ae_ ] "r"(ae), [ be_ ] "r"(be), [ i1_ ] "i"(ROT(imm)) \
-      :)
-
-  
-  
+      :)  
 
 #endif  // ASM_H_
+
